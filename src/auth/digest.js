@@ -143,7 +143,7 @@ class Digest extends Base {
     generateNonce() {
         let date = new Date();
         let time_stamp =  date.getFullYear() << 18 | date.getMonth() << 12 | date.getDate() << 6 | date.getHours() << 0;
-        let nonce_now = utils.md5(time_stamp ^ this.options.salt);
+        let nonce_now = utils.md5((time_stamp ^ this.options.salt).toString());
         return nonce_now;
     }
     
