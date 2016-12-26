@@ -29,7 +29,7 @@ class Digest extends Base {
         } else {
             this.options.qop = 'auth';
         }
-        this.options.salt = option.salt;
+        this.options.salt = options.salt;
     }
 
     // Process user line.
