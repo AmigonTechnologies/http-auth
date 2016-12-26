@@ -29,6 +29,7 @@ class Digest extends Base {
         } else {
             this.options.qop = 'auth';
         }
+        this.options.salt = option.salt;
     }
 
     // Process user line.
@@ -139,46 +140,21 @@ class Digest extends Base {
         });
     }
 
+    generateNonce() {
+        let date = new Date();
+        let time_stamp =  date.getFullYear() << 18 | date.getMonth() << 12 | date.getDate() << 6 | date.getHours() << 0;
+        let nonce_now = utils.md5(time_stamp ^ this.options.salt);
+        return nonce_now;
+    }
+    
     // Validate nonce.
     validateNonce(nonce, qop, nc) {
-        let found = false;
-
-        // Current time.
-        let now = Date.now();
-
-        // Nonces for removal.
-        let noncesToRemove = [];
-
-        // Searching for not expired ones.
-        this.nonces.forEach(serverNonce => {
-            if ((serverNonce[1] + 3600000) > now) {
-                if (serverNonce[0] === nonce) {
-                    if (qop) {
-                        if (nc > serverNonce[2]) {
-                            found = true;
-                            ++ serverNonce[2];
-                        }
-                    } else {
-                        found = true;
-                    }
-                }
-            } else {
-                noncesToRemove.push(serverNonce);
-            }
-        });
-
-        // Remove expired nonces.
-        this.removeNonces(noncesToRemove);
-
-        return found;
+        return this.generateNonce() === nonce;
     }
 
     // Generates and returns new random nonce.
     askNonce() {
-        let nonce = utils.md5(uuid());
-        this.nonces.push([nonce, Date.now(), 0]);
-
-        return nonce;
+            return this.generateNonce();
     }
 
     // Generates request header.
