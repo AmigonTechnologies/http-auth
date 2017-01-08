@@ -29,6 +29,18 @@ class Digest extends Base {
         } else {
             this.options.qop = 'auth';
         }
+
+        if(options.validateNonce === 'none') {
+            this.validateNonceCallback = this.validateNonce;
+        } else {
+            this.validateNonceCallback = options.validateNonce;
+        }
+
+        if(options.askNonce === 'none') {
+            this.askNonceCallback = this.askNonce;
+        } else {
+            this.askNonceCallback = options.askNonce;
+        }
     }
 
     // Process user line.
@@ -96,7 +108,7 @@ class Digest extends Base {
     findUser(req, co, callback) {
         let self = this;
 
-        if (this.validateNonce(co.nonce, co.qop, co.nc)) {
+        if (this.validateNonceCallback(co.nonce, co.qop, co.nc)) {
             let ha2 = utils.md5(`${req.method}:${co.uri}`);
             if (this.checker) {
                 // Custom authentication.
@@ -183,7 +195,7 @@ class Digest extends Base {
 
     // Generates request header.
     generateHeader(result) {
-        let nonce = this.askNonce();
+        let nonce = this.askNonceCallback();
         let stale = result.stale ? true : false;
 
         // Returning it.
